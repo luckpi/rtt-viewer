@@ -4,97 +4,19 @@ UI模块
 Authors: jdh99 <jdh821@163.com>
 """
 
-import os
-import threading
-
-import re
-import threading
-
+from PySide6.QtGui import QCloseEvent
+from qt_ui import Ui_MainWindow
 import sys
+import rtt
+
 from PySide6.QtCore import (
-    QCoreApplication,
-    QDate,
-    QDateTime,
-    QLocale,
-    QMetaObject,
-    QObject,
-    QPoint,
-    QRect,
-    QSize,
-    QTime,
-    QUrl,
-    Qt,
-)
-from PySide6.QtGui import (
-    QBrush,
-    QColor,
-    QConicalGradient,
-    QCursor,
-    QFont,
-    QFontDatabase,
-    QGradient,
-    QIcon,
-    QImage,
-    QKeySequence,
-    QLinearGradient,
-    QPainter,
-    QPalette,
-    QPixmap,
-    QRadialGradient,
-    QTransform,
+    QThread,
 )
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
-    QMenuBar,
-    QPushButton,
-    QSizePolicy,
-    QStatusBar,
-    QWidget,
     QFileDialog,
-    QTableWidgetItem,
-    QTextBrowser,
-    QLineEdit,
 )
-
-from PySide6.QtGui import (
-    QAction,
-    QBrush,
-    QColor,
-    QConicalGradient,
-    QCursor,
-    QFont,
-    QFontDatabase,
-    QGradient,
-    QIcon,
-    QImage,
-    QKeySequence,
-    QLinearGradient,
-    QPainter,
-    QPalette,
-    QPixmap,
-    QRadialGradient,
-    QTransform,
-    QTextDocument,
-    QTextCursor,
-    QTextCharFormat,
-)
-
-from qt_ui import Ui_MainWindow
-import sys
-
-from datetime import datetime
-
-_win = None
-
-
-def parse_c_file(file_path):
-    with open(file_path, "r", encoding="utf-8") as file:
-        content = file.read()
-    pattern = r"#define\s+(\w+)\s+(.*)"
-    matches = re.findall(pattern, content)
-    params = {name: value for name, value in matches}
-    return params
 
 
 class MainForm(QMainWindow, Ui_MainWindow):
@@ -102,7 +24,11 @@ class MainForm(QMainWindow, Ui_MainWindow):
         super(MainForm, self).__init__()
         self.setupUi(self)
 
+        self.rtt = rtt.RTT()
+
         self.actionopen.triggered.connect(self.open_file_dialog)
+        self.switch_device.clicked.connect(self.set_debug_device)
+        self.jlink_enable.clicked.connect(self.connect)
 
     def open_file_dialog(self):
         options = QFileDialog.Options()
@@ -113,9 +39,50 @@ class MainForm(QMainWindow, Ui_MainWindow):
             "C Files (*.h);All Files (*);",
             options=options,
         )
-        if fileName:
-            params = parse_c_file(fileName)
-            print(params)
+
+    def set_enable(self):
+        self.rtt.open()
+
+    def set_debug_device(self):
+        self.rtt.open()
+        device_name = self.rtt.jlink_switch_device()
+        self.debug_device_name.setText(device_name)
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        self.rtt.close()
+        event.accept()
+
+    def connect(self):
+        self.rtt.connect_mode(self.mode_list.currentText())
+        self.rtt.connect(self.debug_device_name.displayText(), self.speed_list.currentText())
+        print(self.rtt.info())
+
+
+class update_jlink_list_thread(QThread):
+    def __init__(self):
+        super(update_jlink_list_thread, self).__init__()
+
+    def run(self):
+        last_jlink_list = []
+        while True:
+            jlink_list = _win.rtt.get_jlink_list()
+            if jlink_list != last_jlink_list:
+                _win.jlink_list.clear()
+                _win.jlink_list.addItems(jlink_list)
+            last_jlink_list = jlink_list
+            self.msleep(100)
+
+
+class jlink_connect_thread(QThread):
+    def __init__(self):
+        super(jlink_connect_thread, self).__init__()
+
+    def run(self):
+        while True:
+            if _win.rtt.is_connected() == False and _win.jlink_list.currentText() != "":
+                print(_win.rtt.is_connected())
+                _win.rtt.open(_win.jlink_list.currentText())
+            self.msleep(100)
 
 
 def _ui():
@@ -123,5 +90,9 @@ def _ui():
 
     app = QApplication(sys.argv)
     _win = MainForm()
+    thread1 = update_jlink_list_thread()
+    thread1.start()
+    thread2 = jlink_connect_thread()
+    thread2.start()
     _win.show()
     sys.exit(app.exec())

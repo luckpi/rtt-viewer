@@ -14,12 +14,12 @@
    <string>RTT Viewer</string>
   </property>
   <widget class="QWidget" name="widget">
-   <widget class="QPushButton" name="switch_2">
+   <widget class="QPushButton" name="jlink_enable">
     <property name="geometry">
      <rect>
       <x>30</x>
       <y>220</y>
-      <width>141</width>
+      <width>151</width>
       <height>31</height>
      </rect>
     </property>
@@ -43,12 +43,12 @@
      </size>
     </property>
    </widget>
-   <widget class="QComboBox" name="serial_list">
+   <widget class="QComboBox" name="jlink_list">
     <property name="geometry">
      <rect>
       <x>90</x>
       <y>20</y>
-      <width>80</width>
+      <width>91</width>
       <height>22</height>
      </rect>
     </property>
@@ -63,15 +63,15 @@
      </rect>
     </property>
     <property name="text">
-     <string>Jlink设备</string>
+     <string>仿真器</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="baud_list">
+   <widget class="QComboBox" name="mode_list">
     <property name="geometry">
      <rect>
       <x>90</x>
       <y>60</y>
-      <width>80</width>
+      <width>91</width>
       <height>22</height>
      </rect>
     </property>
@@ -105,12 +105,12 @@
      <string>连接方式</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="databit_list">
+   <widget class="QComboBox" name="speed_list">
     <property name="geometry">
      <rect>
       <x>90</x>
       <y>100</y>
-      <width>80</width>
+      <width>91</width>
       <height>22</height>
      </rect>
     </property>
@@ -160,36 +160,6 @@
     <property name="text">
      <string>速率</string>
     </property>
-   </widget>
-   <widget class="QComboBox" name="stopbit_list">
-    <property name="geometry">
-     <rect>
-      <x>90</x>
-      <y>140</y>
-      <width>80</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>None</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Even</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Mark</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Odd</string>
-     </property>
-    </item>
    </widget>
    <widget class="QLabel" name="label_4">
     <property name="geometry">
@@ -266,17 +236,46 @@
      <string>接收清空</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit">
+   <widget class="QLineEdit" name="rtt_address">
     <property name="geometry">
      <rect>
       <x>90</x>
       <y>180</y>
-      <width>81</width>
+      <width>91</width>
       <height>21</height>
      </rect>
     </property>
     <property name="text">
-     <string>0x20000000</string>
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="debug_device_name">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>140</y>
+      <width>91</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="switch_device">
+    <property name="geometry">
+     <rect>
+      <x>187</x>
+      <y>139</y>
+      <width>21</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>选择设备</string>
+    </property>
+    <property name="text">
+     <string>...</string>
     </property>
    </widget>
   </widget>
