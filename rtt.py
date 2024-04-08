@@ -11,6 +11,7 @@ def extract_serial_numbers(text):
 class RTT:
     def __init__(self):
         self.jlink = pylink.JLink()
+        self.jlink.__init__()
 
     def get_jlink_list(self):
         jlink_list = self.jlink.connected_emulators()
@@ -21,6 +22,8 @@ class RTT:
         return jlink_list_sn
 
     def open(self, sn=None):
+        self.jlink.close()
+        self.jlink.__init__()
         self.jlink.open(sn)
 
     def close(self):
