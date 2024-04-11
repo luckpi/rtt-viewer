@@ -83,12 +83,12 @@
     </property>
     <item>
      <property name="text">
-      <string>JTAG</string>
+      <string>SWD</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>SWD</string>
+      <string>JTAG</string>
      </property>
     </item>
    </widget>

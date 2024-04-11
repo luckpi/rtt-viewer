@@ -37,7 +37,7 @@ class RTT:
         else:
             self.jlink.connect(device, speed)
 
-    def connect_mode(self, mode: str):
+    def set_connect_mode(self, mode: str):
         # 设置连接模式
         if mode not in ["JTAG", "SWD"]:
             raise ValueError("Invalid mode. Mode must be either 'JTAG' or 'SWD'.")
@@ -48,8 +48,7 @@ class RTT:
         )
         self.jlink.set_tif(tif_value)
 
-    def connect_get_mode(self):
-        # 获取当前连接模式
+    def get_connect_mode(self):
         return "SWD" if self.jlink.tif == pylink.enums.JLinkInterfaces.SWD else "JTAG"
 
     def is_connected(self):
@@ -63,12 +62,12 @@ class RTT:
             "speed_info": self.jlink.speed_info,
             "hardware_version": self.jlink.hardware_version,
             "firmware_version": self.jlink.firmware_version,
-            "connect_mode": self.connect_get_mode(),
+            "connect_mode": self.get_connect_mode(),
             "dll_version": self.jlink.version,
         }
         return jlink_info
 
-    def jlink_switch_device(self):
+    def switch_device(self):
         if self.is_connected() == False:
             raise Exception("JLink not connected")
 
@@ -77,7 +76,25 @@ class RTT:
         return device_param.name
 
     def target_connected(self):
-        return self.jlink.target_connected()
+        state = self.is_connected()
+        if state == False:
+            return False
+        else:
+            return self.jlink.target_connected()
+
+    def start(self, buff_addr):
+        """buff_addr eg: "0x20000000" """
+        self.jlink.rtt_start(int(buff_addr, 16))
+        print("RTT started")
+
+    def stop(self):
+        self.jlink.rtt_stop()
+
+    def read(self, buffer_index, size):
+        return self.jlink.rtt_read(buffer_index, size)
+
+    def write(self, buffer_index, data):
+        self.jlink.rtt_write(buffer_index, data)
 
     def __del__(self):
         self.close()

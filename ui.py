@@ -47,25 +47,28 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.rtt.close()
 
     def set_debug_device(self):
-        self.rtt.open()
-        device_name = self.rtt.jlink_switch_device()
+        device_name = self.rtt.switch_device()
         self.debug_device_name.setText(device_name)
 
     def connect(self):
-        self.rtt.connect_mode(self.mode_list.currentText())
+        self.rtt.set_connect_mode(self.mode_list.currentText())
         speed = self.speed_list.currentText()
         if speed != "auto" and speed != "adaptive":
             speed = int(re.findall(r"\d+", speed)[0])
         self.rtt.connect(self.debug_device_name.displayText(), speed)
+        if self.rtt.is_connected() == False:
+            raise Exception("connect failed")
+        print(self.rtt_address.displayText())
+        self.rtt.start(self.rtt_address.displayText())
         print(self.rtt.info())
 
     def closeEvent(self, event: QCloseEvent) -> None:
         event.accept()
 
 
-class jlink_connect_thread(QThread):
+class rtt_thread(QThread):
     def __init__(self):
-        super(jlink_connect_thread, self).__init__()
+        super(rtt_thread, self).__init__()
         self.last_jlink_list = []
         self.last_connect_jlink = str
 
@@ -90,19 +93,26 @@ class jlink_connect_thread(QThread):
             _win.rtt.open(_win.jlink_list.currentText())
             self.last_connect_jlink = _win.jlink_list.currentText()
 
+    def rtt_read(self):
+        if _win.rtt.target_connected() == True:
+            numbers = _win.rtt.read(0, 128)
+            ascii_chars = [chr(number) for number in numbers]
+            string = ''.join(ascii_chars)
+            print(string)
+
     def run(self):
         while True:
             self.update_jlink_list()
             self.connect_jlink()
-            self.msleep(100)
-
+            self.rtt_read()
+            self.msleep(1)
 
 def _ui():
     global _win
 
     app = QApplication(sys.argv)
     _win = MainForm()
-    thread1 = jlink_connect_thread()
+    thread1 = rtt_thread()
     thread1.start()
     _win.show()
     sys.exit(app.exec())

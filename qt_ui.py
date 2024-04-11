@@ -129,8 +129,8 @@ class Ui_MainWindow(object):
         self.actionsave_as.setText(QCoreApplication.translate("MainWindow", u"\u53e6\u5b58\u4e3a", None))
         self.jlink_enable.setText(QCoreApplication.translate("MainWindow", u"\u6253\u5f00", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"\u4eff\u771f\u5668", None))
-        self.mode_list.setItemText(0, QCoreApplication.translate("MainWindow", u"JTAG", None))
-        self.mode_list.setItemText(1, QCoreApplication.translate("MainWindow", u"SWD", None))
+        self.mode_list.setItemText(0, QCoreApplication.translate("MainWindow", u"SWD", None))
+        self.mode_list.setItemText(1, QCoreApplication.translate("MainWindow", u"JTAG", None))
 
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"\u8fde\u63a5\u65b9\u5f0f", None))
         self.speed_list.setItemText(0, QCoreApplication.translate("MainWindow", u"auto", None))
