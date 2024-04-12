@@ -16,9 +16,10 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QLabel, QLineEdit,
-    QMainWindow, QMenu, QMenuBar, QPushButton,
-    QSizePolicy, QStatusBar, QTextBrowser, QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QLabel,
+    QLineEdit, QMainWindow, QMenu, QMenuBar,
+    QPushButton, QSizePolicy, QStatusBar, QTextBrowser,
+    QTextEdit, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -79,18 +80,15 @@ class Ui_MainWindow(object):
         self.label_5 = QLabel(self.widget)
         self.label_5.setObjectName(u"label_5")
         self.label_5.setGeometry(QRect(30, 183, 54, 16))
-        self.send_window = QTextBrowser(self.widget)
-        self.send_window.setObjectName(u"send_window")
-        self.send_window.setGeometry(QRect(210, 370, 521, 151))
         self.send = QPushButton(self.widget)
         self.send.setObjectName(u"send")
-        self.send.setGeometry(QRect(740, 370, 75, 24))
+        self.send.setGeometry(QRect(740, 380, 75, 24))
         self.send_clean = QPushButton(self.widget)
         self.send_clean.setObjectName(u"send_clean")
         self.send_clean.setGeometry(QRect(740, 410, 75, 24))
         self.recv_clean = QPushButton(self.widget)
         self.recv_clean.setObjectName(u"recv_clean")
-        self.recv_clean.setGeometry(QRect(740, 450, 75, 24))
+        self.recv_clean.setGeometry(QRect(740, 440, 75, 24))
         self.rtt_address = QLineEdit(self.widget)
         self.rtt_address.setObjectName(u"rtt_address")
         self.rtt_address.setGeometry(QRect(90, 180, 91, 21))
@@ -100,6 +98,15 @@ class Ui_MainWindow(object):
         self.switch_device = QPushButton(self.widget)
         self.switch_device.setObjectName(u"switch_device")
         self.switch_device.setGeometry(QRect(187, 139, 21, 24))
+        self.auto_scroll = QCheckBox(self.widget)
+        self.auto_scroll.setObjectName(u"auto_scroll")
+        self.auto_scroll.setGeometry(QRect(20, 290, 101, 21))
+        self.textEdit = QTextEdit(self.widget)
+        self.textEdit.setObjectName(u"textEdit")
+        self.textEdit.setGeometry(QRect(210, 380, 521, 141))
+        self.label_6 = QLabel(self.widget)
+        self.label_6.setObjectName(u"label_6")
+        self.label_6.setGeometry(QRect(20, 270, 54, 16))
         MainWindow.setCentralWidget(self.widget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -153,6 +160,8 @@ class Ui_MainWindow(object):
         self.switch_device.setToolTip(QCoreApplication.translate("MainWindow", u"\u9009\u62e9\u8bbe\u5907", None))
 #endif // QT_CONFIG(tooltip)
         self.switch_device.setText(QCoreApplication.translate("MainWindow", u"...", None))
+        self.auto_scroll.setText(QCoreApplication.translate("MainWindow", u"\u63a5\u6536\u81ea\u52a8\u6eda\u52a8", None))
+        self.label_6.setText(QCoreApplication.translate("MainWindow", u"\u63a5\u6536\u8bbe\u7f6e\uff1a", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u6587\u4ef6", None))
     # retranslateUi
 

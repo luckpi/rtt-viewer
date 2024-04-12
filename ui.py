@@ -12,6 +12,8 @@ import re
 
 from PySide6.QtCore import (
     QThread,
+    Signal,
+    Slot,
 )
 from PySide6.QtWidgets import (
     QApplication,
@@ -26,15 +28,18 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         self.rtt = rtt.RTT()
-        self.need_connect_jlink_sn = None
+        self.last_connect_jlink = []
+        self.jlink_is_need_connect = False
 
         self.actionopen.triggered.connect(self.open_file_dialog)
         self.switch_device.clicked.connect(self.set_debug_device)
         self.jlink_enable.clicked.connect(self.connect)
         self.jlink_list.activated.connect(self.switch_jlink)
+        self.recv_clean.clicked.connect(self.recv_window_clear)
+        self.setup_thread()
 
     def open_file_dialog(self):
-        options = QFileDialog.Options()
+        options = QFileDialog.Option()
         fileName, _ = QFileDialog.getOpenFileName(
             None,
             "打开文件",
@@ -44,7 +49,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
         )
 
     def switch_jlink(self):
-        self.rtt.close()
+        self.jlink_connect = False
 
     def set_debug_device(self):
         device_name = self.rtt.switch_device()
@@ -58,61 +63,84 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.rtt.connect(self.debug_device_name.displayText(), speed)
         if self.rtt.is_connected() == False:
             raise Exception("connect failed")
-        print(self.rtt_address.displayText())
         self.rtt.start(self.rtt_address.displayText())
-        print(self.rtt.info())
+
+    def setup_thread(self):
+        self.rtt_thread = rtt_thread(self.rtt)
+        self.rtt_thread.start()
+        self.rtt_thread.recv_add_signal.connect(self.rtt_recv_add)
+        self.rtt_thread.update_jlink_list_signal.connect(self.update_jlink_list)
+        self.rtt_thread.connect_jlink_signal.connect(self.connect_jlink)
+
+    def recv_window_clear(self):
+        self.recv_window.clear()
+        self.recv_window.clearHistory()
+        self.recv_window.clearFocus()
+
+    @Slot(str)
+    def rtt_recv_add(self, string):
+        self.recv_window.append(string)
+        self.recv_window.ensureCursorVisible()
+
+    @Slot(list)
+    def update_jlink_list(self, jlink_list):
+        self.jlink_list.clear()
+        self.jlink_list.addItems(jlink_list)
+        for index in range(len(jlink_list)):
+            if jlink_list[index] == self.last_connect_jlink:
+                self.jlink_list.setCurrentIndex(index)
+
+    @Slot(str)
+    def connect_jlink(self, sn):
+        self.jlink_connect = True
+        self.last_connect_jlink = sn
+        print("connect jlink: ", sn)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         event.accept()
 
 
 class rtt_thread(QThread):
-    def __init__(self):
-        super(rtt_thread, self).__init__()
-        self.last_jlink_list = []
-        self.last_connect_jlink = str
+    recv_add_signal = Signal(str)
+    update_jlink_list_signal = Signal(list)
+    connect_jlink_signal = Signal(str)
 
-    def update_jlink_list(self):
-        jlink_list = _win.rtt.get_jlink_list()
+    def __init__(self, rtt: rtt.RTT):
+        super(rtt_thread, self).__init__()
+        self.rtt = rtt
+        self.last_jlink_list = list
+
+    def check_jlink(self):
+        jlink_list = self.rtt.get_jlink_list()
         if jlink_list != self.last_jlink_list:
-            _win.jlink_list.clear()
-            if len(jlink_list) == 0:
-                _win.jlink_list.addItem("")
-            else:
-                _win.jlink_list.addItems(jlink_list)
-                print(jlink_list)
-                for i in range(len(jlink_list)):
-                    if jlink_list[i] == self.last_connect_jlink:
-                        print("set index", i)
-                        _win.jlink_list.setCurrentIndex(i)
+            self.update_jlink_list_signal.emit(jlink_list)
         self.last_jlink_list = jlink_list
 
     def connect_jlink(self):
-        if _win.rtt.is_connected() == False and _win.jlink_list.currentText() != "":
-            print("connect", _win.jlink_list.currentText())
-            _win.rtt.open(_win.jlink_list.currentText())
-            self.last_connect_jlink = _win.jlink_list.currentText()
+        if (
+            self.rtt.is_connected() == False or _win.jlink_connect == False
+        ) and _win.jlink_list.currentText() != "":
+            connect_jlink_sn = _win.jlink_list.currentText()
+            self.rtt.open(connect_jlink_sn)
+            self.connect_jlink_signal.emit(connect_jlink_sn)
 
     def rtt_read(self):
-        if _win.rtt.target_connected() == True:
-            numbers = _win.rtt.read(0, 128)
-            ascii_chars = [chr(number) for number in numbers]
-            string = ''.join(ascii_chars)
-            print(string)
+        if self.rtt.target_connected() == True:
+            string = bytes(self.rtt.read(0, 128)).decode("ascii")
+            self.recv_add_signal.emit(string)
 
     def run(self):
         while True:
-            self.update_jlink_list()
+            self.check_jlink()
             self.connect_jlink()
             self.rtt_read()
             self.msleep(1)
+
 
 def _ui():
     global _win
 
     app = QApplication(sys.argv)
     _win = MainForm()
-    thread1 = rtt_thread()
-    thread1.start()
     _win.show()
     sys.exit(app.exec())
