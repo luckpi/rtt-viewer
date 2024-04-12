@@ -271,14 +271,14 @@
    <widget class="QCheckBox" name="auto_scroll">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>30</x>
       <y>290</y>
-      <width>101</width>
+      <width>71</width>
       <height>21</height>
      </rect>
     </property>
     <property name="text">
-     <string>接收自动滚动</string>
+     <string>自动滚动</string>
     </property>
    </widget>
    <widget class="QTextEdit" name="textEdit">
@@ -294,7 +294,7 @@
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>30</x>
       <y>270</y>
       <width>54</width>
       <height>16</height>
@@ -302,6 +302,32 @@
     </property>
     <property name="text">
      <string>接收设置：</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="recv_stop">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>290</y>
+      <width>61</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>暂停</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="hex_type">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>320</y>
+      <width>71</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>十六进制</string>
     </property>
    </widget>
   </widget>

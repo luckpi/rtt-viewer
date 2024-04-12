@@ -31,7 +31,7 @@ class RTT:
 
     def connect(self, device=None, speed="auto"):
         if device is None:
-            index = self.jlink._dll.JLINKARM_DEVICE_SelectDialog(0, 0, 0)
+            index = self.jlink._dll.JLINKARM_DEVICE_SelectDialog(0, 0, 0) # type: ignore
             device_param = self.jlink.supported_device(index)
             self.jlink.connect(device_param.name, speed)
         else:
@@ -42,14 +42,14 @@ class RTT:
         if mode not in ["JTAG", "SWD"]:
             raise ValueError("Invalid mode. Mode must be either 'JTAG' or 'SWD'.")
         tif_value = (
-            pylink.enums.JLinkInterfaces.SWD
+            pylink.enums.JLinkInterfaces.SWD # type: ignore
             if mode == "SWD"
-            else pylink.enums.JLinkInterfaces.JTAG
+            else pylink.enums.JLinkInterfaces.JTAG # type: ignore
         )
         self.jlink.set_tif(tif_value)
 
     def get_connect_mode(self):
-        return "SWD" if self.jlink.tif == pylink.enums.JLinkInterfaces.SWD else "JTAG"
+        return "SWD" if self.jlink.tif == pylink.enums.JLinkInterfaces.SWD else "JTAG" # type: ignore
 
     def is_connected(self):
         return self.jlink.connected()
@@ -71,7 +71,7 @@ class RTT:
         if self.is_connected() == False:
             raise Exception("JLink not connected")
 
-        index = self.jlink._dll.JLINKARM_DEVICE_SelectDialog(0, 0, 0)
+        index = self.jlink._dll.JLINKARM_DEVICE_SelectDialog(0, 0, 0) # type: ignore
         device_param = self.jlink.supported_device(index)
         return device_param.name
 
