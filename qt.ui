@@ -161,7 +161,7 @@
      </widget>
     </item>
     <item row="17" column="4" rowspan="5">
-     <widget class="QTextEdit" name="textEdit"/>
+     <widget class="QTextEdit" name="send_text"/>
     </item>
     <item row="0" column="1" colspan="2">
      <widget class="QComboBox" name="jlink_list">
@@ -258,7 +258,7 @@
      </widget>
     </item>
     <item row="1" column="1" colspan="2">
-     <widget class="QComboBox" name="mode_list">
+     <widget class="QComboBox" name="port_list">
       <property name="minimumSize">
        <size>
         <width>100</width>

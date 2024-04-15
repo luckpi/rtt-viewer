@@ -101,10 +101,10 @@ class Ui_MainWindow(object):
 
         self.gridLayout.addWidget(self.jlink_enable, 5, 0, 1, 3)
 
-        self.textEdit = QTextEdit(self.widget)
-        self.textEdit.setObjectName(u"textEdit")
+        self.send_text = QTextEdit(self.widget)
+        self.send_text.setObjectName(u"send_text")
 
-        self.gridLayout.addWidget(self.textEdit, 17, 4, 5, 1)
+        self.gridLayout.addWidget(self.send_text, 17, 4, 5, 1)
 
         self.jlink_list = QComboBox(self.widget)
         self.jlink_list.setObjectName(u"jlink_list")
@@ -138,14 +138,14 @@ class Ui_MainWindow(object):
 
         self.gridLayout.addWidget(self.switch_device, 3, 3, 1, 1)
 
-        self.mode_list = QComboBox(self.widget)
-        self.mode_list.addItem("")
-        self.mode_list.addItem("")
-        self.mode_list.setObjectName(u"mode_list")
-        self.mode_list.setMinimumSize(QSize(100, 25))
-        self.mode_list.setMaximumSize(QSize(100, 25))
+        self.port_list = QComboBox(self.widget)
+        self.port_list.addItem("")
+        self.port_list.addItem("")
+        self.port_list.setObjectName(u"port_list")
+        self.port_list.setMinimumSize(QSize(100, 25))
+        self.port_list.setMaximumSize(QSize(100, 25))
 
-        self.gridLayout.addWidget(self.mode_list, 1, 1, 1, 2)
+        self.gridLayout.addWidget(self.port_list, 1, 1, 1, 2)
 
         self.label_3 = QLabel(self.widget)
         self.label_3.setObjectName(u"label_3")
@@ -244,8 +244,8 @@ class Ui_MainWindow(object):
         self.switch_device.setToolTip(QCoreApplication.translate("MainWindow", u"\u9009\u62e9\u8bbe\u5907", None))
 #endif // QT_CONFIG(tooltip)
         self.switch_device.setText(QCoreApplication.translate("MainWindow", u"...", None))
-        self.mode_list.setItemText(0, QCoreApplication.translate("MainWindow", u"SWD", None))
-        self.mode_list.setItemText(1, QCoreApplication.translate("MainWindow", u"JTAG", None))
+        self.port_list.setItemText(0, QCoreApplication.translate("MainWindow", u"SWD", None))
+        self.port_list.setItemText(1, QCoreApplication.translate("MainWindow", u"JTAG", None))
 
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"\u901f\u7387", None))
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"\u63a5\u6536\u8bbe\u7f6e\uff1a", None))

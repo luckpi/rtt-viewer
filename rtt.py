@@ -11,7 +11,6 @@ def extract_serial_numbers(text):
 class RTT:
     def __init__(self):
         self.jlink = pylink.JLink()
-        self.jlink.__init__()
 
     def get_jlink_list(self):
         jlink_list = self.jlink.connected_emulators()
@@ -30,25 +29,30 @@ class RTT:
         self.jlink.close()
 
     def connect(self, device=None, speed="auto"):
+        '''
+        device (str): eg: "STM32F103RB"
+        speed (str): "auto","adaptive" or "1-12000"(kHz)
+        '''
         if device is None:
-            index = self.jlink._dll.JLINKARM_DEVICE_SelectDialog(0, 0, 0)  # type: ignore
-            device_param = self.jlink.supported_device(index)
-            self.jlink.connect(device_param.name, speed)
-        else:
-            self.jlink.connect(device, speed)
+            device = self.switch_device()
 
-    def set_connect_mode(self, mode: str):
+        self.jlink.connect(device, speed)
+
+    def set_connect_port(self, port: str):
+        """
+        port (str): "JTAG" or "SWD"
+        """
         # 设置连接模式
-        if mode not in ["JTAG", "SWD"]:
-            raise ValueError("Invalid mode. Mode must be either 'JTAG' or 'SWD'.")
+        if port not in ["JTAG", "SWD"]:
+            raise ValueError("Invalid port. Mode must be either 'JTAG' or 'SWD'.")
         tif_value = (
             pylink.enums.JLinkInterfaces.SWD  # type: ignore
-            if mode == "SWD"
+            if port == "SWD"
             else pylink.enums.JLinkInterfaces.JTAG  # type: ignore
         )
         self.jlink.set_tif(tif_value)
 
-    def get_connect_mode(self):
+    def get_connect_port(self):
         return "SWD" if self.jlink.tif == pylink.enums.JLinkInterfaces.SWD else "JTAG"  # type: ignore
 
     def is_connected(self):
@@ -62,7 +66,7 @@ class RTT:
             "speed_info": self.jlink.speed_info,
             "hardware_version": self.jlink.hardware_version,
             "firmware_version": self.jlink.firmware_version,
-            "connect_mode": self.get_connect_mode(),
+            "connect_mode": self.get_connect_port(),
             "dll_version": self.jlink.version,
         }
         return jlink_info
@@ -83,7 +87,12 @@ class RTT:
             return self.jlink.target_connected()
 
     def start(self, buff_addr):
-        """buff_addr eg: "0x20000000" """
+        """
+        buff_addr (str) : eg: "0x20000000"
+        """
+        if buff_addr == "":
+            print("Please input buffer address")
+            return
         self.jlink.rtt_start(int(buff_addr, 16))
         print("RTT started")
 

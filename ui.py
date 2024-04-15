@@ -32,9 +32,6 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         self.rtt = rtt_object()
-        self.last_connect_jlink = ""
-        self.jlink_is_need_connect = False
-        self.jlink_connect = False
 
         self.actionopen.triggered.connect(self.open_file_dialog)
         self.switch_device.clicked.connect(self.set_debug_device)
@@ -55,7 +52,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.rtt.jlink_target_switch_device_trigger = True
 
     def connect(self):
-        self.rtt.jlink_target_port = self.mode_list.currentText()
+        self.rtt.jlink_target_port = self.port_list.currentText()
 
         speed = self.speed_list.currentText()
         if speed != "auto" and speed != "adaptive":
@@ -73,8 +70,8 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.rtt_thread.start()
         self.rtt_thread.recv_add_signal.connect(self.rtt_recv_add)
         self.rtt_thread.update_jlink_list_signal.connect(self.update_jlink_list)
-        self.rtt_thread.connect_jlink_signal.connect(self.connect_jlink)
         self.rtt_thread.switch_device_signal.connect(self.switch_device_func)
+        self.rtt_thread.connect_jlink_signal.connect(self.connect_jlink)
 
     def recv_window_clear(self):
         self.recv_window.clear()
@@ -97,20 +94,29 @@ class MainForm(QMainWindow, Ui_MainWindow):
             self.recv_window.moveCursor(self.recv_window.textCursor().MoveOperation.End)
 
     @Slot(list)
-    def update_jlink_list(self, jlink_list, index):
+    def update_jlink_list(self, jlink_list: list):
         self.jlink_list.clear()
         self.jlink_list.addItems(jlink_list)
-        self.jlink_list.setCurrentIndex(index)
+        if self.rtt.last_open_jlink_sn in jlink_list:
+            index = jlink_list.index(self.rtt.last_open_jlink_sn)
+            self.jlink_list.setCurrentIndex(index)
 
     @Slot(str)
-    def connect_jlink(self, sn):
-        print("connect jlink: ", sn)
+    def open_jlink(self, sn):
+        print("open jlink: ", sn)
+
+    @Slot(bool)
+    def connect_jlink(self, is_connected):
+        print("------------------------>")
+        self.jlink_enable.setText("打开" if is_connected == False else "关闭")
 
     @Slot(str)
     def switch_device_func(self, device_name):
         self.debug_device_name.setText(device_name)
 
     def closeEvent(self, event: QCloseEvent) -> None:
+        self.rtt_thread.stop()
+        self.rtt.disconnect()
         event.accept()
 
 
@@ -137,7 +143,7 @@ class rtt_object:
 
     def connect(self, device, speed):
         self.rtt.connect(device, speed)
-    
+
     def disconnect(self):
         self.rtt.close()
 
@@ -151,11 +157,10 @@ class rtt_object:
         return self.rtt.is_connected()
 
     def set_port(self, port):
-        self.rtt.set_connect_mode(port)
+        self.rtt.set_connect_port(port)
 
     def target_connected(self):
-        self.target_is_connected = self.rtt.target_connected()
-        return self.target_is_connected
+        return self.rtt.target_connected()
 
     def read(self, address, size):
         return self.rtt.read(address, size)
@@ -166,41 +171,42 @@ class rtt_object:
 
 class rtt_thread(QThread):
     recv_add_signal = Signal(list)
-    update_jlink_list_signal = Signal(list, int)
-    connect_jlink_signal = Signal(str)
+    update_jlink_list_signal = Signal(list)
     switch_device_signal = Signal(str)
+    connect_jlink_signal = Signal(bool)
 
     def __init__(self, rtt: rtt_object):
         super(rtt_thread, self).__init__()
         self.rtt = rtt
-        self.last_jlink_list = []
+        self.jlink_list = []
 
     def check_jlink(self):
-        jlink_list = self.rtt.get_jlink_list()
-        if jlink_list == self.last_jlink_list:
+        now_jlink_list = self.rtt.get_jlink_list()
+        if now_jlink_list == self.jlink_list:
             return
-        index = 0
-        for index in range(len(jlink_list)):
-            if self.rtt.last_open_jlink_sn == "":
-                break
-            if jlink_list[index] == self.rtt.last_open_jlink_sn:
-                break
-        self.last_jlink_list = jlink_list
-        self.update_jlink_list_signal.emit(jlink_list, index)
+        self.jlink_list = now_jlink_list
+        self.update_jlink_list_signal.emit(now_jlink_list)
 
     def open_jlink(self):
         if (
-            (self.rtt.is_connected() == False or self.rtt.jlink_open_trigger == True)
-            and _win.jlink_list.currentText() != ""
-            and self.last_jlink_list != []
-        ):
-            if self.rtt.open_jlink_sn == "" or self.rtt.open_jlink_sn not in self.last_jlink_list:
-                self.rtt.open_jlink_sn = self.last_jlink_list[0]
+            self.rtt.is_connected() == False or self.rtt.jlink_open_trigger == True
+        ) and self.jlink_list != []:
+            if (
+                self.rtt.open_jlink_sn == ""
+                or self.rtt.open_jlink_sn not in self.jlink_list
+            ):
+                self.rtt.open_jlink_sn = self.jlink_list[0]
             self.rtt.open(self.rtt.open_jlink_sn)
             self.rtt.last_open_jlink_sn = self.rtt.open_jlink_sn
-            self.connect_jlink_signal.emit(self.rtt.open_jlink_sn)
 
         self.rtt.jlink_open_trigger = False
+
+    def check_connect(self):
+        now_connected = self.rtt.target_connected()
+        if self.rtt.target_is_connected == now_connected:
+            return
+        self.rtt.target_is_connected = now_connected
+        self.connect_jlink_signal.emit(now_connected)
 
     def connect_jlink(self):
         if self.rtt.is_connected() == False or self.rtt.jlink_connect_trigger == False:
@@ -209,14 +215,21 @@ class rtt_thread(QThread):
         self.rtt.jlink_connect_trigger = False
 
         if self.rtt.target_connected() == True:
-            self.rtt.stop()
-        
+            self.rtt.disconnect()
+            return
+
         self.rtt.set_port(self.rtt.jlink_target_port)
+        if self.rtt.jlink_target_device == "":
+            self.rtt.jlink_target_switch_device_trigger = True
+            return
         self.rtt.connect(self.rtt.jlink_target_device, self.rtt.jlink_target_speed)
         self.rtt.start(self.rtt.jlink_target_rtt_address)
 
     def switch_device(self):
-        if self.rtt.is_connected() == False or self.rtt.jlink_target_switch_device_trigger == False:
+        if (
+            self.rtt.is_connected() == False
+            or self.rtt.jlink_target_switch_device_trigger == False
+        ):
             self.rtt.jlink_target_switch_device_trigger = False
             return
         self.rtt.jlink_target_switch_device_trigger = False
@@ -237,10 +250,14 @@ class rtt_thread(QThread):
         while True:
             self.check_jlink()
             self.open_jlink()
+            self.check_connect()
             self.switch_device()
             self.connect_jlink()
             self.rtt_read()
             self.usleep(1)
+
+    def stop(self):
+        self.terminate()
 
 
 def _ui():
