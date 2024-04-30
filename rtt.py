@@ -29,14 +29,16 @@ class RTT:
         self.jlink.close()
 
     def connect(self, device=None, speed="auto"):
-        '''
+        """
         device (str): eg: "STM32F103RB"
         speed (str): "auto","adaptive" or "1-12000"(kHz)
-        '''
+        """
         if device is None:
             device = self.switch_device()
-
-        self.jlink.connect(device, speed)
+        try:
+            self.jlink.connect(device, speed)
+        except Exception as e:
+            print(e)
 
     def set_connect_port(self, port: str):
         """
@@ -50,7 +52,10 @@ class RTT:
             if port == "SWD"
             else pylink.enums.JLinkInterfaces.JTAG  # type: ignore
         )
-        self.jlink.set_tif(tif_value)
+        try:
+            self.jlink.set_tif(tif_value)
+        except Exception as e:
+            print(e)
 
     def get_connect_port(self):
         return "SWD" if self.jlink.tif == pylink.enums.JLinkInterfaces.SWD else "JTAG"  # type: ignore
@@ -73,10 +78,15 @@ class RTT:
 
     def switch_device(self):
         if self.is_connected() == False:
-            raise Exception("JLink not connected")
+            print("Please connect JLink first")
+            return
 
         index = self.jlink._dll.JLINKARM_DEVICE_SelectDialog(0, 0, 0)  # type: ignore
-        device_param = self.jlink.supported_device(index)
+        try:
+            device_param = self.jlink.supported_device(index)
+        except Exception as e:
+            print(e)
+            return
         return device_param.name
 
     def target_connected(self):
@@ -93,11 +103,18 @@ class RTT:
         if buff_addr == "":
             print("Please input buffer address")
             return
-        self.jlink.rtt_start(int(buff_addr, 16))
-        print("RTT started")
+        try:
+            self.jlink.rtt_start(int(buff_addr, 16))
+            print("RTT started")
+        except Exception as e:
+            print(e)
 
     def stop(self):
-        self.jlink.rtt_stop()
+        try:
+            self.jlink.rtt_stop()
+            print("RTT stopped")
+        except Exception as e:
+            print(e)
 
     def read(self, buffer_index, size):
         return self.jlink.rtt_read(buffer_index, size)
@@ -106,5 +123,5 @@ class RTT:
         bytes_data = list(data.encode("ascii"))
         self.jlink.rtt_write(buffer_index, bytes_data)
 
-    def __del__(self):
+    def __del__(self): 
         self.close()

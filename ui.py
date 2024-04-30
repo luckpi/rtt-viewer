@@ -107,7 +107,6 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
     @Slot(bool)
     def connect_jlink(self, is_connected):
-        print("------------------------>")
         self.jlink_enable.setText("打开" if is_connected == False else "关闭")
 
     @Slot(str)
